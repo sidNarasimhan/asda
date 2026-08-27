@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hire ASDA · {{ wizard.next.label if wizard.next else 'Ready' }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body class="gate-body">
+  {% if flash %}<div class="flash gate-flash">{{ flash }}</div>{% endif %}
+  {% if error %}<div class="flash err gate-flash">{{ error }}</div>{% endif %}
+  <div class="gate">
+    <aside class="gate-rail">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <span>ASDA <small>Hire your SDR</small></span>
+      </div>
+      <ol class="gate-steps">
+        {% for s in wizard.trail %}
+        <li class="{{ 'done' if s.done else '' }} {{ 'current' if s.current else '' }}">
+          <span class="n">{% if s.done %}✓{% else %}{{ s.n }}{% endif %}</span>
+          <span>
+            <strong>{{ s.label }}</strong>
+            {% if s.current %}<small>This step</small>{% elif s.done %}<small>Done</small>{% endif %}
+          </span>
+        </li>
+        {% endfor %}
+      </ol>
+    </aside>
+    <main class="gate-main">
+      {% if wizard.next %}
+      <p class="gate-kicker">Step {{ wizard.next.n }} of {{ wizard.total }}</p>
+      <h1>{{ wizard.next.ask }}</h1>
+      <p class="lede">{{ wizard.next.why }}</p>
+      {% if wizard.next.href %}
+      <p><a class="btn ghost" href="{{ wizard.next.href }}" target="_blank" rel="noreferrer">{{ wizard.next.href_label or wizard.next.href }}</a></p>
+      {% endif %}
+      {% if wizard.next.how %}
+      <ol class="gate-how">
+        {% for line in wizard.next.how %}<li>{{ line }}</li>{% endfor %}
+      </ol>
+      {% endif %}
+      <form method="post" action="/onboard" class="gate-form">
+        <input type="hidden" name="step" value="{{ wizard.next.id }}" />
+        {% if wizard.next.kind == 'who' %}
+          <label>Company
+            <input name="company_name" placeholder="Altisec Technologies Pvt Ltd" required autofocus />
+          </label>
+          <label>Your name
+            <input name="cbo_name" placeholder="Sid" />
+          </label>
+        {% elif wizard.next.kind == 'email' %}
+          <div class="choice mail-pick">
+            <label><input type="radio" name="provider" value="gmail" data-mail="gmail" checked /> Google</label>
+            <label><input type="radio" name="provider" value="outlook_personal" data-mail="outlook_personal" /> Outlook.com / Hotmail</label>
+            <label><input type="radio" name="provider" value="outlook_work" data-mail="outlook_work" /> Microsoft 365 work</label>
+          </div>
+          <div class="mail-guide" id="guide-gmail">
+            <ol class="gate-how">
+              {% for line in mail_guides.gmail.how %}<li>{{ line }}</li>{% endfor %}
+            </ol>
+          </div>
+          <div class="mail-guide" id="guide-outlook_personal" hidden>
+            <ol class="gate-how">
+              {% for line in mail_guides.outlook_personal.how %}<li>{{ line }}</li>{% endfor %}
+            </ol>
+          </div>
+          <div class="mail-guide" id="guide-outlook_work" hidden>
+            <ol class="gate-how">
+              {% for line in mail_guides.outlook_work.how %}<li>{{ line }}</li>{% endfor %}
+            </ol>
+          </div>
+          <label>Email address
+            <input name="smtp_user" type="email" placeholder="you@company.com" required autofocus />
+          </label>
+          <label>Password
+            <span class="hint" id="pw-hint">{{ mail_guides.gmail.password_label }}</span>
+            <input name="smtp_password" type="password" placeholder="Paste here" autocomplete="off" required />
+          </label>
+          <p class="hint">I test send first. If Microsoft will not let me read the work inbox, we add a Gmail for replies next. No admin needed.</p>
+        {% elif wizard.next.kind == 'cookie' %}
+          <label>li_at cookie
+            <textarea name="cookie" rows="4" placeholder="{{ wizard.next.placeholder }}" required autofocus></textarea>
+          </label>
+        {% elif wizard.next.kind == 'url' %}
+          <label>Booking link
+            <input name="value" type="url" placeholder="{{ wizard.next.placeholder }}" required autofocus />
+          </label>
+        {% elif wizard.next.kind == 'email_only' %}
+          <label>Report inbox
+            <input name="cbo_email" type="email" placeholder="{{ wizard.next.placeholder }}" required autofocus />
+          </label>
+        {% else %}
+          <label>{{ wizard.next.label }}
+            <input name="value" type="password" placeholder="{{ wizard.next.placeholder }}" autocomplete="off" required autofocus />
+          </label>
+        {% endif %}
+        <button class="btn" type="submit">Continue</button>
+        {% if wizard.next.id == 'bolna' %}
+        <button class="btn ghost" type="submit" name="skip" value="1" formnovalidate>Skip calls for now</button>
+        {% endif %}
+      </form>
+      {% else %}
+      <p class="gate-kicker">Ready</p>
+      <h1>You're set. The desk is yours.</h1>
+      <p class="lede">Practice mode until you turn live on. I will not email real people until you say so.</p>
+      <p><a class="btn" href="/">Open the desk</a></p>
+      {% endif %}
+    </main>
+  </div>
+  <script>
+  (function () {
+    const labels = {
+      gmail: {{ mail_guides.gmail.password_label|tojson }},
+      outlook_personal: {{ mail_guides.outlook_personal.password_label|tojson }},
+      outlook_work: {{ mail_guides.outlook_work.password_label|tojson }},
+    };
+    const hint = document.getElementById("pw-hint");
+    function show(id) {
+      document.querySelectorAll(".mail-guide").forEach((el) => { el.hidden = el.id !== "guide-" + id; });
+      if (hint && labels[id]) hint.textContent = labels[id];
+    }
+    document.querySelectorAll("input[name=provider]").forEach((el) => {
+      el.addEventListener("change", () => show(el.value));
+    });
+  })();
+  </script>
+</body>
+</html>

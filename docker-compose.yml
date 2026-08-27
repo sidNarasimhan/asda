@@ -1,0 +1,63 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://asda:asda@db:5432/asda
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: .
+    command: python -m asda.workers.runner
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://asda:asda@db:5432/asda
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    depends_on:
+      - db
+      - redis
+
+  ui:
+    build: .
+    command: uvicorn asda.api.main:app --host 0.0.0.0 --port 8501
+    ports:
+      - "8501:8501"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://asda:asda@db:5432/asda
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: asda
+      POSTGRES_PASSWORD: asda
+      POSTGRES_DB: asda
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:

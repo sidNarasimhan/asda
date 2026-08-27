@@ -1,0 +1,36 @@
+# Deliverability and platform-safety defaults. Override via env if needed.
+
+email:
+  daily_cap: 80
+  hourly_cap: 20
+  min_seconds_between_sends: 45
+  pause_on_bounce_rate: 0.04
+  pause_on_complaint_rate: 0.001
+  suppress_roles:
+    - noreply
+    - no-reply
+    - bounce
+    - mailer-daemon
+    - postmaster
+    - abuse
+
+linkedin:
+  daily_connection_cap: 8
+  weekly_connection_cap: 40
+  daily_message_cap: 15
+  min_seconds_between_actions: 900
+  weekdays_only: true
+  timezone: Asia/Kolkata
+  hour_start: 9
+  hour_end: 18
+  warmup_days: 14
+  warmup_start_connections: 5
+
+scoring:
+  min_to_sequence: 55
+  high_value_threshold: 80
+  always_hitl_above: 90
+
+hitl_default_stages:
+  - reply
+  - outreach

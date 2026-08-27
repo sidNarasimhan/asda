@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in · ASDA</title>
+  <link rel="stylesheet" href="/static/app.css?v=drop7" />
+</head>
+<body class="gate-body">
+  <main class="gate-main" style="margin: 0 auto; padding-top: 12vh">
+    <p class="gate-kicker">ASDA</p>
+    <h1>Sign in to view the desk</h1>
+    <p class="lede">Username is asda. Use the share password you were given.</p>
+    {% if error %}<div class="flash err">{{ error }}</div>{% endif %}
+    <form class="gate-form" method="post" action="/login">
+      <input type="hidden" name="next" value="{{ next or '/' }}" />
+      <label>Username
+        <input name="username" value="asda" autocomplete="username" />
+      </label>
+      <label>Password
+        <input name="password" type="password" autocomplete="current-password" autofocus />
+      </label>
+      <button class="btn" type="submit">Open desk</button>
+    </form>
+  </main>
+</body>
+</html>

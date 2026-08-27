@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block body %}
+<p class="crumb"><a href="/leads">Leads</a> / {{ lead.full_name }}</p>
+<header class="page-head">
+  <div>
+    <h1>{{ lead.full_name }}</h1>
+    <p class="lede">{{ lead.title or "—" }} · {{ lead.company.name }} · {{ lead.company.industry or lead.company.location }}</p>
+  </div>
+  <div class="head-actions">
+    <span class="status s-{{ lead.status.value }}">{{ lead.status.value.replace('_', ' ') }}</span>
+    <span class="score lg">{{ lead.score }}</span>
+  </div>
+</header>
+
+<p class="meta-line">
+  {% if lead.email %}<a href="mailto:{{ lead.email }}">{{ lead.email }}</a>{% endif %}
+  {% for e in lead.emails or [] %}
+    {% if e and e != lead.email %} · <a href="mailto:{{ e }}">{{ e }}</a>{% endif %}
+  {% endfor %}
+  {% if lead.linkedin_url %} · <a href="{{ lead.linkedin_url }}" target="_blank" rel="noreferrer">{{ lead.linkedin_url }}</a>{% endif %}
+  {% if lead.phone %} · {{ lead.phone }}{% endif %}
+</p>
+
+<div class="row-actions">
+  <form method="post" action="/leads/{{ lead.id }}/run">
+    <button class="btn" name="mode" value="research">Research</button>
+    <button class="btn ghost" name="mode" value="sequence" data-confirm="This starts outreach for this person. Continue?">Research + outreach</button>
+  </form>
+</div>
+
+{% if tracker %}
+<section class="card" style="margin-bottom:14px">
+  <div class="card-head">
+    <h2>Tracker</h2>
+    {% if tracker.waiting_on_cbo %}<span class="tag warn">waiting on you</span>{% endif %}
+  </div>
+  <p class="hint">
+    Mail {{ tracker.next_email or 'idle' }}
+    · LinkedIn {{ tracker.linkedin_stage }}{% if tracker.next_linkedin %} {{ tracker.next_linkedin }}{% endif %}
+    · {% if tracker.channels.phone %}Phone {{ lead.phone }} · {{ tracker.phone_stage }}{% else %}No phone yet{% endif %}
+    {% if tracker.reason %}<br>{{ tracker.reason }}{% endif %}
+  </p>
+  <div class="grid-2">
+    <div>
+      <h3>Mail</h3>
+      {% for s in tracker.email %}
+      <article class="seq">
+        <header>{{ s.label }} · {{ s.status }}{% if s.when %} · {{ s.when }}{% endif %}</header>
+        <p>{{ s.preview }}</p>
+      </article>
+      {% else %}
+      <p class="hint">No mail planned yet.</p>
+      {% endfor %}
+    </div>
+    <div>
+      <h3>LinkedIn</h3>
+      {% for s in tracker.linkedin %}
+      <article class="seq">
+        <header>{{ s.label }} · {{ s.status }}{% if s.when %} · {{ s.when }}{% endif %}</header>
+        <p>{{ s.preview }}</p>
+      </article>
+      {% else %}
+      <p class="hint">No LinkedIn planned yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% if tracker.phone %}
+  <h3>Call</h3>
+  {% for s in tracker.phone %}
+  <article class="seq">
+    <header>{{ s.label }} · {{ s.status }}{% if s.when %} · {{ s.when }}{% endif %}</header>
+    <p>{{ s.preview }}</p>
+  </article>
+  {% endfor %}
+  {% endif %}
+</section>
+{% endif %}
+
+<div class="grid-2" style="margin-top:16px">
+  <div class="card">
+    <h2>Research</h2>
+    {% if lead.research_card %}
+      <p>{{ lead.research_card.summary }}</p>
+      {% if lead.research_card.unique_to_this_person %}
+      <ul class="chips">
+        {% for h in lead.research_card.unique_to_this_person[:6] %}<li>{{ h }}</li>{% endfor %}
+      </ul>
+      {% elif lead.research_card.personalization_hooks %}
+      <ul class="chips">
+        {% for h in lead.research_card.personalization_hooks[:6] %}<li>{{ h }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+    {% else %}
+      <p class="hint">Not researched yet. Research writes a card and a score. It does not send.</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2>Sequence</h2>
+    {% if content and content.emails %}
+      {% for e in content.emails[:4] %}
+      <article class="seq">
+        <header>Email {{ e.step }} · {{ e.delay_days }}d · {{ e.angle }}</header>
+        <strong>{{ e.subject }}</strong>
+        <p>{{ e.body }}</p>
+      </article>
+      {% endfor %}
+      {% if content.linkedin %}
+      <article class="seq">
+        <header>LinkedIn note</header>
+        <p>{{ content.linkedin.connection_note }}</p>
+      </article>
+      {% endif %}
+    {% else %}
+      <p class="hint">No copy yet. Run research first.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if memories %}
+<div class="card" style="margin-top:14px">
+  <div class="card-head"><h2>Memory of this person</h2></div>
+  <ul class="feed">
+    {% for m in memories %}
+    <li><b>{{ m.kind }}</b><span>{{ m.text }}</span></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if lead.sequence_state and lead.sequence_state.thread %}
+<div class="card" style="margin-top:14px">
+  <div class="card-head"><h2>Conversation</h2></div>
+  <ul class="feed">
+    {% for m in lead.sequence_state.thread %}
+    <li>
+      <b>{{ m.role }} / {{ m.channel }}</b>
+      <span>{{ m.text }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endblock %}

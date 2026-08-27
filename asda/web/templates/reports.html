@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="page-head">
+  <div>
+    <h1>Reports</h1>
+    <p class="lede">Numbers snapshot every evening. Playbook on Sunday. Brief in your inbox Monday 8am.</p>
+  </div>
+  <form method="post" action="/reports/send">
+    <button class="btn" type="submit">Email me this brief</button>
+  </form>
+</header>
+
+<div class="kpis">
+  <div class="kpi"><span>Emails sent</span><b>{{ conversions.emails_sent }}</b></div>
+  <div class="kpi"><span>LinkedIn connects</span><b>{{ conversions.li_connects }}</b></div>
+  <div class="kpi"><span>Reply rate</span><b>{{ conversions.reply_rate }}%</b></div>
+  <div class="kpi"><span>Meetings</span><b>{{ metrics.meetings }}</b></div>
+</div>
+
+{% if scoreboard %}
+<div class="card" style="margin-bottom:14px">
+  <div class="card-head">
+    <h2>This month vs target</h2>
+    <span class="tag {{ 'warn' if scoreboard.overall == 'Behind pace' else 'good' }}">{{ scoreboard.overall }}</span>
+  </div>
+  {% for row in scoreboard.rows %}
+  <div class="quota">
+    <div class="quota-top">
+      <strong>{{ row.label }}</strong>
+      <div class="quota-nums"><b>{{ row.actual|comma }}</b> <span>/ {{ row.target|comma }}</span></div>
+    </div>
+    <div class="bar"><i class="{{ row.tone }}" style="width: {{ row.pct }}%"></i></div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Funnel</h2>
+    <ul class="funnel">
+      {% for step in funnel %}
+      <li>
+        <div class="funnel-meta">
+          <span>{{ step.label }}</span>
+          <b>{{ step.count }}</b>
+        </div>
+        <div class="bar"><i style="width: {{ step.width }}%"></i></div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="card">
+    <h2>How I grow</h2>
+    <ol class="cadence">
+      <li><b>Every few minutes</b> send due steps and read replies.</li>
+      <li><b>20:00</b> snapshot the book so weeks are comparable.</li>
+      <li><b>Sunday 02:00</b> study outcomes, write playbook rules, reweight scoring.</li>
+      <li><b>Monday 08:00</b> email you this brief. Next week’s copy uses the new rules.</li>
+    </ol>
+    {% if insight and insight.summary %}
+    <p class="insight">{{ insight.summary }}</p>
+    {% endif %}
+    {% if playbook.prompt_updates %}
+    <ul class="feed">
+      {% for rule in playbook.prompt_updates[:8] %}
+      <li><span>{{ rule }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <div class="card-head">
+    <h2>This week’s brief</h2>
+  </div>
+  <pre class="brief">{{ brief }}</pre>
+</div>
+
+{% if snapshots %}
+<div class="card" style="margin-top:14px">
+  <h2>Daily snapshots</h2>
+  <table>
+    <thead><tr><th>Day</th><th>Leads</th><th>Replies</th><th>Meetings</th></tr></thead>
+    <tbody>
+    {% for s in snapshots %}
+      <tr>
+        <td class="mono">{{ s.day }}</td>
+        <td>{{ s.total_leads or 0 }}</td>
+        <td>{{ s.replies or 0 }}</td>
+        <td>{{ s.meetings or 0 }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

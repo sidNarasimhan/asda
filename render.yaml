@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: asda-altisec
+    runtime: docker
+    healthCheckPath: /
+    envVars:
+      - key: ASDA_ENV
+        value: production
+      - key: ASDA_DRY_RUN
+        value: "true"
+      - key: ASDA_DATA_DIR
+        value: /var/asda-data
+      - key: DATABASE_URL
+        value: sqlite:////var/asda-data/asda.db
+      - key: WAPPFLY_API_TOKEN
+        sync: false
+      - key: WAPPFLY_WEBHOOK_SECRET
+        generateValue: true
+    disk:
+      name: asda-data
+      mountPath: /var/asda-data
+      sizeGB: 1

@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="page-head">
+  <div>
+    <h1>{{ greeting }}</h1>
+    <p class="lede">
+      {{ 'Employee is running due steps, inbox, and new-lead research.' if worker.running else 'Employee is stopped. Start it when you want work to continue overnight.' }}
+    </p>
+  </div>
+  <div class="head-actions">
+    {% if worker.running %}
+    <form method="post" action="/worker/stop">
+      <button class="btn ghost" type="submit">Stop employee</button>
+    </form>
+    {% else %}
+    <form method="post" action="/worker/start">
+      <button class="btn" type="submit">Start employee</button>
+    </form>
+    {% endif %}
+    <form method="post" action="/test-run">
+      <button class="btn ghost" type="submit">Send me a test</button>
+    </form>
+    <form method="post" action="/learn">
+      <button class="btn ghost" type="submit">Learn from this week</button>
+    </form>
+  </div>
+</header>
+
+<section class="now-bar state-{{ now.state if now else 'stopped' }}">
+  <i class="pulse"></i>
+  <div>
+    <strong>{{ now.headline if now else 'Employee status unknown' }}</strong>
+    <small>{{ now.detail if now else '' }}</small>
+  </div>
+  <a class="link" href="/pipeline">Pipelines →</a>
+</section>
+
+<section class="composer card" id="ask">
+  <div class="composer-label">Ask ASDA</div>
+  <form class="ask" method="post" action="/ask" enctype="multipart/form-data">
+    <input name="message" value="{{ asked or '' }}" placeholder="Show campaign drafts. Make follow-up 2 shorter. Schedule weekdays 10–4. Pause sending." autofocus />
+    <input type="file" name="file" />
+    <button class="btn" type="submit">Send</button>
+  </form>
+  <p class="hint">Review drafts and plans, change copy or cadence, set schedules, or pause outreach. Nothing sends without approval.</p>
+  {% if reply %}
+  <div class="reply">
+    <div class="reply-meta">ASDA</div>
+    {{ reply }}
+    {% if applied %}
+    <ul class="chips">
+      {% for a in applied %}<li>{{ a }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+{% include "drop_leads.html" %}
+
+{% if board %}
+<div class="lanes">
+  <section class="card lane">
+    <div class="card-head">
+      <h2>Mail</h2>
+      <span class="tag">{{ board.counts.email_queued }} queued · {{ board.counts.email_sent }} on mail · {{ board.counts.email_convos }} convos</span>
+    </div>
+    <div class="lane-grid mail">
+      {% for col in board.email %}
+      <div class="lane-col">
+        <h3>{{ col.label }} <span>{{ col.count }}</span></h3>
+        {% for lead in col.leads %}
+        <a class="chip" href="{{ lead.href }}">
+          <strong>{{ lead.name }}</strong>
+          <small>{{ lead.company }}{% if lead.when %} · {{ lead.when }}{% endif %}</small>
+          <em>{{ lead.sub }}</em>
+        </a>
+        {% else %}
+        <p class="empty">Empty</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="card lane">
+    <div class="card-head">
+      <h2>LinkedIn</h2>
+      <span class="tag">{{ board.counts.li_invites }} invites · {{ board.counts.li_accepted }} accepted · {{ board.counts.li_messages }} messaged</span>
+    </div>
+    <div class="lane-grid li">
+      {% for col in board.linkedin %}
+      <div class="lane-col">
+        <h3>{{ col.label }} <span>{{ col.count }}</span></h3>
+        {% for lead in col.leads %}
+        <a class="chip" href="{{ lead.href }}">
+          <strong>{{ lead.name }}</strong>
+          <small>{{ lead.company }}{% if lead.when %} · {{ lead.when }}{% endif %}</small>
+          <em>{{ lead.sub }}</em>
+        </a>
+        {% else %}
+        <p class="empty">Empty</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% if board.calls %}
+  <section class="card lane">
+    <div class="card-head">
+      <h2>Calls</h2>
+      <span class="tag">{{ board.counts.calls_queued or 0 }} queued · last resort after mail and LinkedIn</span>
+    </div>
+    <div class="lane-grid mail">
+      {% for col in board.calls %}
+      <div class="lane-col">
+        <h3>{{ col.label }} <span>{{ col.count }}</span></h3>
+        {% for lead in col.leads %}
+        <a class="chip" href="{{ lead.href }}">
+          <strong>{{ lead.name }}</strong>
+          <small>{{ lead.company }} · {{ lead.sub }}</small>
+        </a>
+        {% else %}
+        <p class="empty">Empty</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+
+<section class="card scoreboard">
+  <div class="card-head">
+    <h2>This month · {{ scoreboard.period }}</h2>
+    <span class="tag {{ 'warn' if scoreboard.overall == 'Behind pace' else 'good' }}">{{ scoreboard.overall }}</span>
+  </div>
+  <p class="hint">Target vs actual. Pace assumes even days through {{ scoreboard.days_in }} days. {{ metrics.total_leads }} leads in the book.</p>
+  {% for row in scoreboard.rows %}
+  <div class="quota">
+    <div class="quota-top">
+      <div>
+        <strong>{{ row.label }}</strong>
+        <small>{{ row.hint }}</small>
+      </div>
+      <div class="quota-nums">
+        <b>{{ row.actual|comma }}</b>
+        <span>/ {{ row.target|comma }}</span>
+      </div>
+    </div>
+    <div class="bar lg"><i class="{{ row.tone }}" style="width: {{ row.pct }}%"></i></div>
+    <div class="quota-foot">
+      <span>{{ row.pct }}% of target{% if row.sub %} · {{ row.sub }}{% endif %}</span>
+      <span>{{ row.pace_label }} · {{ row.per_day|comma }}/day to hit</span>
+    </div>
+  </div>
+  {% endfor %}
+  <details class="targets-edit">
+    <summary>Edit targets</summary>
+    <form method="post" action="/targets" class="targets-form">
+      <label>Outreach
+        <input name="outreach" type="number" min="0" step="100" value="{{ scoreboard.targets.outreach }}" />
+      </label>
+      <label>Replies
+        <input name="replies" type="number" min="0" step="10" value="{{ scoreboard.targets.replies }}" />
+      </label>
+      <label>Calls booked
+        <input name="meetings" type="number" min="0" step="5" value="{{ scoreboard.targets.meetings }}" />
+      </label>
+      <button class="btn" type="submit">Save targets</button>
+    </form>
+  </details>
+</section>
+
+<div class="grid-2">
+  <div class="card" id="desk">
+    <div class="card-head">
+      <h2>Desk checklist</h2>
+      {% if open_checks %}
+      <span class="tag warn">{{ open_checks }} left</span>
+      {% else %}
+      <span class="tag good">Ready</span>
+      {% endif %}
+    </div>
+    <p class="hint">Talk on Home to paste keys. These stay as checkboxes so you can see what's wired.</p>
+    <ul class="checks">
+      {% for item in checks %}
+      <li class="{{ 'done' if item.ok else 'todo' }}">
+        <label>
+          <input type="checkbox" {% if item.ok %}checked disabled{% endif %} onclick="if(!this.checked) return; location.href='{{ item.href }}'" />
+          <span>
+            <strong>{{ item.label }}{% if not item.required %} <em>later</em>{% endif %}</strong>
+            <small>{{ item.hint }}</small>
+          </span>
+        </label>
+        {% if not item.ok and item.required %}<a href="{{ item.href }}">Fix</a>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Memory</h2>
+      <span class="tag">{{ (memories.entries or [])|length }} live</span>
+    </div>
+    <p class="hint">Evolving. I reuse what worked, strengthen it, and leave people you told me to leave alone.</p>
+    <ul class="feed">
+      {% for m in (memories.preferences or [])[:3] %}
+      <li><b>rule</b><span>{{ m.text }}</span></li>
+      {% endfor %}
+      {% for m in (memories.people or [])[:3] %}
+      <li><b>person</b><span>{{ m.text }}</span></li>
+      {% endfor %}
+      {% for m in (memories.playbook or [])[:3] %}
+      <li><b>playbook</b><span>{{ m.text }}</span></li>
+      {% endfor %}
+      {% for m in (memories.episodes or [])[:3] %}
+      <li><b>episode</b><span>{{ m.text }}</span></li>
+      {% endfor %}
+      {% if not memories.entries %}
+      <li>Blank slate — after a tick I start keeping facts, people, and rules here.</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top:14px">
+  <div class="card">
+    <div class="card-head">
+      <h2>What I’m learning</h2>
+      <span class="tag">{{ (playbook.prompt_updates or [])|length }} rules</span>
+    </div>
+    {% if insight and insight.summary %}
+      <p class="insight">{{ insight.summary }}</p>
+    {% endif %}
+    {% if patterns %}
+      <ul class="feed">
+        {% for p in patterns %}
+        <li>
+          <b>{{ p.kind }}</b>
+          <span>{{ p.text }}</span>
+          <code>{{ p.lift }}×</code>
+        </li>
+        {% endfor %}
+      </ul>
+    {% elif playbook.prompt_updates %}
+      <ul class="feed">
+        {% for rule in playbook.prompt_updates[:6] %}
+        <li><span>{{ rule }}</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="hint">After replies and meetings I store what worked — openers, hooks, ICP — and use it on the next batch. Sunday night I rewrite the playbook. Next week’s copy is written against it.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if now and now.jobs %}
+<div class="card" style="margin-top:14px">
+  <div class="card-head">
+    <h2>Recurring jobs</h2>
+    <span class="tag {{ 'good' if worker.running else 'warn' }}">{{ 'running' if worker.running else 'stopped' }}</span>
+  </div>
+  <ul class="jobs">
+    {% for j in now.jobs %}
+    <li>
+      <b>{{ j.label }}</b>
+      <span>{{ j.every }}</span>
+      <span class="when">last {{ j.last }} · {{ j.next }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="card" style="margin-top:14px">
+  <div class="card-head">
+    <h2>What happened</h2>
+    <a class="link" href="/reports">Reports →</a>
+  </div>
+  <ul class="feed">
+    {% for e in events[:12] %}
+    <li>
+      <b>{{ e.label }}</b>
+      {% if e.who %}<span>{{ e.who }}</span>{% endif %}
+      <span class="when">{{ e.when }}</span>
+    </li>
+    {% else %}
+    <li>No actions yet. This log only records things I actually did.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

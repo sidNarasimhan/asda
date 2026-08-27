@@ -1,0 +1,9 @@
+<section class="card drop-card" id="drop-leads">
+  <form id="lead-drop" method="post" action="/leads/upload" enctype="multipart/form-data">
+    <input id="lead-files" class="sr-only" type="file" name="files" accept=".csv,.tsv,.xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" multiple />
+    <label class="dropzone" id="dropzone" for="lead-files">
+      <strong>Drop CSV or Excel here</strong>
+      <span data-drop-hint>Or click to pick files. Several at once is fine.</span>
+    </label>
+  </form>
+</section>

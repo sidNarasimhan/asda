@@ -1,0 +1,100 @@
+company_name: Altisec
+product_name: Altisec cybersecurity services
+website: https://altisec.in
+cbo_name: Sid
+cbo_title: Cybersecurity Sales
+tagline: We protect what matters.
+value_proposition: Altisec helps Indian and EMEA organisations assess, build, and
+  run practical cybersecurity programs. Its services span enhanced SOC and SOC optimisation,
+  security analytics and SOAR, red teaming and penetration testing, vulnerability
+  management, cloud security, identity and access management, data protection, incident
+  response, threat intelligence, application security, and cybersecurity architecture
+  reviews.
+proof_points:
+- End-to-end cybersecurity services for Indian and EMEA organisations
+- SOC, SOAR, security analytics, and threat intelligence capabilities
+- Cloud security across AWS, Microsoft, Google Cloud, SaaS, and multi-cloud
+- Offensive security: red teaming, penetration testing, breach-and-attack simulation
+- Identity, data protection, incident response, and security architecture services
+- Pune, Mumbai, Bengaluru, Noida, Middle East, and USA presence
+call_to_action: 20-minute security-priorities conversation with Karthik
+tone: Direct, technically credible, and consultative. Lead with the buyer's likely
+  cyber-risk, compliance, cloud, identity, SOC, or incident-response priority. Never
+  use logistics language, generic AI phrasing, or unverified security claims.
+icp:
+  titles:
+  - CISO
+  - Chief Information Security Officer
+  - CIO
+  - Chief Information Officer
+  - CTO
+  - VP Information Security
+  - Head of Information Security
+  - Head of Cybersecurity
+  - Head of Security
+  - Director Information Security
+  - Director Cybersecurity
+  - Security Architect
+  - Head of IT
+  - IT Director
+  - Head of Infrastructure
+  - Head of Cloud
+  - Head of Risk
+  - Head of GRC
+  - Data Protection Officer
+  industries:
+  - Banking
+  - Financial Services
+  - Insurance
+  - Fintech
+  - Healthcare
+  - Pharmaceuticals
+  - Manufacturing
+  - SaaS
+  - Technology
+  - Retail
+  - E-commerce
+  - Logistics
+  - Energy
+  - Telecommunications
+  - Government
+  company_sizes:
+  - 51-200
+  - 201-500
+  - 501-1000
+  - 1001-5000
+  - 5001-10000
+  - 10000+
+  geos:
+  - India
+  - APAC
+  - EMEA
+  disqualifiers:
+  - Students and job seekers
+  - Personal email-only records without a company
+  - Cybersecurity service competitors as prospective buyers
+  - Recruiters and staffing firms unless explicitly strategic partners
+pain_points_we_solve:
+- Understaffed or fragmented SOC operations and alert fatigue
+- Cloud misconfigurations, weak identity controls, and exposed attack surface
+- Vulnerability backlogs and inability to prioritise real exploitable risk
+- Incident readiness, ransomware resilience, and slow response coordination
+- Compliance and security-governance gaps across complex IT estates
+- Need for independent red-team, application, or architecture validation
+angles:
+  soc_optimization: SOC maturity, detection coverage, SOAR, and managed security operations.
+  cloud_identity: Cloud posture, IAM/PAM, data protection, and identity risk.
+  offensive_validation: Red teaming, penetration testing, breach-and-attack simulation,
+    and application security.
+  resilience: Incident response retainers, ransomware readiness, threat hunting, and
+    tabletop exercises.
+  governance: Cybersecurity architecture, vulnerability management, GRC, and security
+    program assessments.
+forbidden_phrases:
+- Hope this email finds you well
+- Just circling back
+- Touching base
+- Synergy
+- I came across your profile
+- Quick question
+- Best-in-class

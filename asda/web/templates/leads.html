@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="page-head">
+  <div>
+    <h1>Leads</h1>
+    <p class="lede">{{ total|default(0)|comma }} people in the book. LinkedIn is the real profile link. Open a row for the tracker.</p>
+  </div>
+  <div class="head-actions">
+    <a class="btn ghost" href="/leads?group=company">By company</a>
+    <a class="btn ghost" href="/leads">By person</a>
+  </div>
+</header>
+
+{% include "drop_leads.html" %}
+
+<div class="kpis kpis-5" style="margin-bottom:14px">
+  <div class="card kpi"><b>{{ stats.people|default(0)|comma }}</b><span>People</span></div>
+  <div class="card kpi"><b>{{ stats.email|default(0)|comma }}</b><span>With email</span>{% if stats.email_addrs %}<em>{{ stats.email_addrs|comma }} addresses</em>{% endif %}</div>
+  <div class="card kpi"><b>{{ stats.linkedin|default(0)|comma }}</b><span>With LinkedIn</span></div>
+  <div class="card kpi"><b>{{ stats.phone|default(0)|comma }}</b><span>With phone</span></div>
+  <div class="card kpi"><b>{{ stats.dnr|default(0)|comma }}</b><span>DNR, will not mail</span></div>
+</div>
+
+<form class="toolbar card" method="get" action="/leads">
+  <input type="search" name="q" value="{{ q or '' }}" placeholder="Name, company, email, LinkedIn, phone…" />
+  <select name="status">
+    <option value="">All statuses</option>
+    {% for s in ['new','researched','sequenced','connected','replied','meeting_booked','awaiting_approval','suppressed'] %}
+    <option value="{{ s }}" {{ 'selected' if status_f==s else '' }}>{{ s.replace('_',' ') }}</option>
+    {% endfor %}
+  </select>
+  <select name="ch">
+    <option value="">All channels</option>
+    <option value="email" {{ 'selected' if ch=='email' else '' }}>Has email</option>
+    <option value="linkedin" {{ 'selected' if ch=='linkedin' else '' }}>Has LinkedIn</option>
+    <option value="phone" {{ 'selected' if ch=='phone' else '' }}>Has phone</option>
+    <option value="dnr" {{ 'selected' if ch=='dnr' else '' }}>DNR only</option>
+  </select>
+  <select name="sort">
+    <option value="relevance" {{ 'selected' if sort=='relevance' else '' }}>Altisec relevance</option>
+    <option value="company" {{ 'selected' if sort=='company' else '' }}>Company</option>
+    <option value="recent" {{ 'selected' if sort=='recent' else '' }}>Recently updated</option>
+  </select>
+  <input name="company" value="{{ company_f or '' }}" placeholder="Company filter" />
+  {% if group %}<input type="hidden" name="group" value="{{ group }}" />{% endif %}
+  <button class="btn" type="submit">Filter</button>
+</form>
+
+{% if group == 'company' %}
+  {% for name, people in companies.items() %}
+  <section class="card" style="margin-bottom:12px">
+    <div class="card-head">
+      <h2>{{ name }}</h2>
+      <span class="tag">{{ people|length }} people</span>
+    </div>
+    <ul class="feed">
+      {% for lead in people[:20] %}
+      <li>
+        <a href="/leads/{{ lead.id }}"><b>{{ lead.full_name }}</b></a>
+        <span>{{ lead.title }}</span>
+        {% if lead.linkedin_url %}<a href="{{ lead.linkedin_url }}" target="_blank" rel="noreferrer">LinkedIn</a>{% endif %}
+        <span class="status s-{{ lead.status.value }}">{% if 'dnr' in lead.tags %}DNR{% else %}{{ lead.status.value.replace('_',' ') }}{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% else %}
+  <p class="hint">No companies yet. Drop a CSV above.</p>
+  {% endfor %}
+{% else %}
+<div class="table-wrap card">
+  <table class="leads">
+    <thead>
+      <tr>
+        <th>Person</th>
+        <th>Company</th>
+        <th>ICP</th>
+        <th>Email</th>
+        <th>LinkedIn</th>
+        <th>Phone</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for row in rows %}
+      {% set lead = row.lead %}
+      {% set tr = row.tr %}
+      <tr>
+        <td>
+          <a class="person" href="/leads/{{ lead.id }}">
+            <span class="avatar">{{ (lead.first_name or '?')[0] }}</span>
+            {{ lead.full_name }}
+          </a>
+          <div class="muted">{{ lead.title }}</div>
+        </td>
+        <td><a href="/leads?company={{ (lead.company.name or '')|urlencode }}">{{ lead.company.name or '-' }}</a></td>
+        <td><span class="score">{{ lead.score }}</span></td>
+        <td>
+          {% if lead.email %}<a href="mailto:{{ lead.email }}">{{ lead.email }}</a>{% else %}<span class="muted">-</span>{% endif %}
+          {% for e in (lead.emails or [])[:1] %}
+            {% if e and e != lead.email %}<div class="muted email-extra">{{ e }}</div>{% endif %}
+          {% endfor %}
+        </td>
+        <td>
+          {% if lead.linkedin_url %}
+            <a href="{{ lead.linkedin_url }}" target="_blank" rel="noreferrer">{{ lead.linkedin_url.split('/in/')[-1][:36] }}</a>
+          {% else %}
+            <span class="muted">-</span>
+          {% endif %}
+        </td>
+        <td class="muted">{{ lead.phone or '-' }}</td>
+        <td>
+          <span class="status s-{{ lead.status.value }}">{% if 'dnr' in lead.tags %}DNR{% else %}{{ lead.status.value.replace('_', ' ') }}{% endif %}</span>
+          {% if tr.waiting_on_cbo %}<span class="tag warn">needs you</span>{% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="empty-row">Empty book. Talk on Home and drop a CSV, or I will ask you for keys first.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if pages and pages > 1 %}
+<p class="hint">Page {{ page }} of {{ pages }} · {{ total }} people
+  {% if page > 1 %}<a href="/leads?page={{ page-1 }}&q={{ q }}&status={{ status_f }}&company={{ company_f }}&ch={{ ch }}&sort={{ sort }}">Prev</a>{% endif %}
+  {% if page < pages %}<a href="/leads?page={{ page+1 }}&q={{ q }}&status={{ status_f }}&company={{ company_f }}&ch={{ ch }}&sort={{ sort }}">Next</a>{% endif %}
+</p>
+{% endif %}
+{% endif %}
+{% endblock %}

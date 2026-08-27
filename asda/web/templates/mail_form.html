@@ -1,0 +1,28 @@
+<form method="post" action="/settings/mail" class="stack" style="max-width:560px">
+  <div class="choice">
+    <label><input type="radio" name="provider" value="gmail" {{ 'checked' if mail_provider not in ['outlook','outlook_work','outlook_personal'] else '' }} /> Google</label>
+    <label><input type="radio" name="provider" value="outlook_personal" {{ 'checked' if mail_provider == 'outlook_personal' else '' }} /> Outlook.com / Hotmail</label>
+    <label><input type="radio" name="provider" value="outlook_work" {{ 'checked' if mail_provider in ['outlook','outlook_work'] else '' }} /> Microsoft 365 work</label>
+  </div>
+  <details open>
+    <summary>Google</summary>
+    <ol class="gate-how">
+      {% for line in mail_guides.gmail.how %}<li>{{ line }}</li>{% endfor %}
+    </ol>
+  </details>
+  <details>
+    <summary>Outlook.com / Hotmail (personal)</summary>
+    <ol class="gate-how">
+      {% for line in mail_guides.outlook_personal.how %}<li>{{ line }}</li>{% endfor %}
+    </ol>
+  </details>
+  <details>
+    <summary>Microsoft 365 work</summary>
+    <ol class="gate-how">
+      {% for line in mail_guides.outlook_work.how %}<li>{{ line }}</li>{% endfor %}
+    </ol>
+  </details>
+  <input name="smtp_user" type="email" placeholder="you@company.com" value="{{ mail or '' }}" required />
+  <input name="smtp_password" type="password" placeholder="App password or mailbox password" autocomplete="off" required />
+  <button class="btn" type="submit">{{ 'Replace mailbox' if mail else 'Connect email' }}</button>
+</form>

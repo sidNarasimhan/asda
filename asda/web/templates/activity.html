@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="page-head">
+  <div>
+    <h1>Activity</h1>
+    <p class="lede">Only real actions. If it isn’t here, ASDA didn’t do it.</p>
+  </div>
+</header>
+<div class="card table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>When</th>
+        <th>Action</th>
+        <th>Who</th>
+        <th>Actor</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for e in events %}
+      <tr>
+        <td class="mono">{{ e.when }}</td>
+        <td>{{ e.label }}</td>
+        <td>{% if e.lead_id %}<a href="/leads/{{ e.lead_id }}">{{ e.who or e.lead_id[:8] }}</a>{% else %}{{ e.who or "—" }}{% endif %}</td>
+        <td class="mono">{{ e.actor }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="empty-row">Nothing logged yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

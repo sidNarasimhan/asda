@@ -1,0 +1,6 @@
+first_name,last_name,email,title,company,domain,linkedin_url,industry,size,location
+Ava,Chen,ava.chen@northwind.io,VP Sales,Northwind Analytics,northwind.io,https://www.linkedin.com/in/avachen,SaaS,120,San Francisco
+Marcus,Reed,marcus@harborops.com,CRO,HarborOps,harborops.com,https://www.linkedin.com/in/marcusreed,B2B software,80,Austin
+Priya,Nair,priya.nair@lumenfield.co,Head of Growth,Lumenfield,lumenfield.co,https://www.linkedin.com/in/priyanair,Fintech,45,New York
+Jonah,Walsh,jwalsh@brightlane.app,Founder,Brightlane,brightlane.app,https://www.linkedin.com/in/jonahwalsh,SaaS,22,Denver
+Sofia,Martinez,sofia@keelhr.com,CEO,Keel HR,keelhr.com,https://www.linkedin.com/in/sofiamartinez,HR tech,60,Chicago

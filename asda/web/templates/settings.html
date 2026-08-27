@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="page-head">
+  <div>
+    <h1>Settings</h1>
+    <p class="lede">One mailbox. One LinkedIn. The rest is this company’s offer, quotas, and how other agents connect.</p>
+  </div>
+</header>
+
+<section class="card" id="keys">
+  <div class="card-head"><h2>API keys</h2></div>
+  <p class="hint">You can paste these in the Home chat instead. Stored in <code>data/runtime.json</code>, not git. .env still works if you prefer files.</p>
+  <form method="post" action="/settings/keys" class="stack" style="max-width:640px">
+    <label class="hint" style="margin:0">OpenRouter {{ '· saved' if keys.openrouter else '· required to think' }}
+      <input name="openrouter_api_key" type="password" placeholder="{{ '•••• saved — paste to replace' if keys.openrouter else 'sk-or-v1-…' }}" autocomplete="off" />
+    </label>
+    <label class="hint" style="margin:0">PhantomBuster {{ '· saved' if keys.phantombuster else '' }}
+      <input name="phantombuster_api_key" type="password" placeholder="{{ '•••• saved — paste to replace' if keys.phantombuster else 'API key' }}" autocomplete="off" />
+    </label>
+    <label class="hint" style="margin:0">Apollo {{ '· saved' if keys.apollo else '· optional' }}
+      <input name="apollo_api_key" type="password" placeholder="{{ '•••• saved — paste to replace' if keys.apollo else 'Leave empty — CSV works' }}" autocomplete="off" />
+    </label>
+    <button class="btn" type="submit">Save keys</button>
+  </form>
+</section>
+
+<section class="card" id="company">
+  <div class="card-head"><h2>Company</h2></div>
+  <p class="hint">This is who ASDA works for. Change it when you sell this desk to another team.</p>
+  <form method="post" action="/settings/company" class="stack" style="max-width:640px">
+    <input name="company_name" placeholder="Company" value="{{ offer.company_name or '' }}" />
+    <input name="product_name" placeholder="Product" value="{{ offer.product_name or '' }}" />
+    <input name="website" type="url" placeholder="https://company.com" value="{{ offer.website or '' }}" />
+    <input name="tagline" placeholder="Tagline" value="{{ offer.tagline or '' }}" />
+    <input name="cbo_name" placeholder="Your name" value="{{ offer.cbo_name or '' }}" />
+    <input name="cbo_title" placeholder="Your title" value="{{ offer.cbo_title or '' }}" />
+    <textarea name="value_proposition" rows="4" placeholder="Value proposition">{{ offer.value_proposition or '' }}</textarea>
+    <textarea name="tone" rows="3" placeholder="Tone of voice">{{ offer.tone or '' }}</textarea>
+    <input name="call_to_action" placeholder="Call to action" value="{{ offer.call_to_action or '' }}" />
+    <label class="hint" style="margin:0">ICP titles (one per line)
+      <textarea name="icp_titles" rows="3">{{ (offer.icp.titles if offer.icp else [])|join('\n') }}</textarea>
+    </label>
+    <label class="hint" style="margin:0">Industries
+      <textarea name="icp_industries" rows="3">{{ (offer.icp.industries if offer.icp else [])|join('\n') }}</textarea>
+    </label>
+    <label class="hint" style="margin:0">Geos
+      <textarea name="icp_geos" rows="3">{{ (offer.icp.geos if offer.icp else [])|join('\n') }}</textarea>
+    </label>
+    <label class="hint" style="margin:0">Minimum ICP score (0–100)
+      <input name="min_score" type="number" min="0" max="100" value="{{ min_score }}" />
+    </label>
+    <button class="btn" type="submit">Save company</button>
+  </form>
+</section>
+
+
+<section class="card" id="email">
+  <div class="card-head">
+    <h2>Email</h2>
+    <span class="tag {{ 'good' if mail else 'warn' }}">{{ 'Connected' if mail else 'Not connected' }}</span>
+  </div>
+  {% if mail %}
+    <p class="connected-line"><strong>{{ mail }}</strong> · {{ mail_guides[mail_provider].label if mail_guides and mail_guides[mail_provider] else mail_provider }}</p>
+    <p class="hint">
+      {% if mail_imap and (not reply_to or reply_to == mail) %}Sending and reading replies on this inbox.
+      {% elif mail_imap and reply_to %}Sending from this mailbox. Replies go to {{ reply_to }}.
+      {% else %}Sending works. Microsoft will not let this desk read the work inbox without an admin. Add a Gmail reply inbox below.
+      {% endif %}
+    </p>
+    <details class="targets-edit">
+      <summary>Replace this mailbox</summary>
+      {% include "mail_form.html" %}
+    </details>
+  {% else %}
+    {% include "mail_form.html" %}
+  {% endif %}
+</section>
+
+<section class="card" id="replies" style="margin-top:14px">
+  <div class="card-head">
+    <h2>Read replies</h2>
+    <span class="tag {{ 'good' if mail_imap else 'warn' }}">{{ 'Connected' if mail_imap else 'Needed to see replies' }}</span>
+  </div>
+  {% if mail_imap %}
+    <p class="connected-line"><strong>{{ reply_inbox or reply_to or mail }}</strong></p>
+    <p class="hint">{% if reply_to and reply_to != mail %}Outbound mail is from {{ mail }}. Reply-To is this Gmail, so prospect replies land here.{% else %}Same inbox for send and replies.{% endif %}</p>
+    <details class="targets-edit">
+      <summary>Use a different Gmail for replies</summary>
+      <form method="post" action="/settings/reply-inbox" class="stack" style="max-width:560px">
+        <input name="smtp_user" type="email" placeholder="replies@gmail.com" required />
+        <input name="smtp_password" type="password" placeholder="16-character Google app password" autocomplete="off" required />
+        <button class="btn" type="submit">Replace reply inbox</button>
+      </form>
+    </details>
+  {% else %}
+    <p class="hint">Microsoft work email can send. It cannot let this desk read the inbox without an IT admin. Free path: a Gmail you control. Mail still goes out from the work address. Reply-To is Gmail, so when they hit Reply it lands here.</p>
+    <ol class="gate-how">
+      <li>Open a Gmail you actually check, or make one for replies.</li>
+      <li>Turn on 2-Step Verification at <a href="https://myaccount.google.com/security" target="_blank" rel="noreferrer">Google security</a>.</li>
+      <li>Create an app password at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer">app passwords</a>. Name it ASDA.</li>
+      <li>Paste the Gmail address and the 16-character code below.</li>
+    </ol>
+    <form method="post" action="/settings/reply-inbox" class="stack" style="max-width:560px">
+      <input name="smtp_user" type="email" placeholder="replies@gmail.com" required />
+      <input name="smtp_password" type="password" placeholder="16-character Google app password" autocomplete="off" required />
+      <button class="btn" type="submit">Connect Gmail replies</button>
+    </form>
+  {% endif %}
+</section>
+
+<section class="card" id="linkedin" style="margin-top:14px">
+  <div class="card-head">
+    <h2>LinkedIn</h2>
+    <span class="tag {{ 'good' if li.connected else 'warn' }}">{{ 'Connected' if li.connected else 'Not connected' }}</span>
+  </div>
+  {% if li.connected %}
+    <p class="connected-line"><strong>{{ li.agent_name or 'ASDA Outreach' }}</strong> · PhantomBuster</p>
+    <p class="hint">{{ li.detail }} Cookie saved. Auto Connect {{ 'ready' if li.auto_connect else 'missing' }}.{% if li.last %} Last run: {{ li.last }}.{% endif %}</p>
+    <details class="targets-edit">
+      <summary>Replace LinkedIn cookie</summary>
+      <p class="hint">Replaces the current session. One LinkedIn login — not a second account. Chrome → linkedin.com → DevTools → Application → Cookies → <code>li_at</code>.</p>
+      <form method="post" action="/settings/linkedin" class="stack">
+        <textarea name="cookie" rows="3" placeholder="Paste new li_at value"></textarea>
+        <button class="btn ghost" type="submit">Replace cookie</button>
+      </form>
+    </details>
+  {% else %}
+    <p class="hint">Chrome → linkedin.com → DevTools → Application → Cookies → <code>li_at</code>. Paste the value. PhantomBuster sends invites weekdays 9:00–17:00 IST.</p>
+    <form method="post" action="/settings/linkedin" class="stack">
+      <textarea name="cookie" rows="3" placeholder="Paste li_at value"></textarea>
+      <button class="btn ghost" type="submit">Connect LinkedIn</button>
+    </form>
+  {% endif %}
+</section>
+
+<section class="card" id="brief" style="margin-top:14px">
+  <div class="card-head"><h2>Reports &amp; questions</h2></div>
+  <form method="post" action="/settings/brief" class="stack">
+    <input name="cbo_email" type="email" placeholder="Where reports and 'I don't know' questions go" value="{{ cbo_email }}" />
+    <button class="btn ghost" type="submit">Save</button>
+  </form>
+  <p class="hint">If a reply is unclear I email this address instead of guessing. Monday brief goes here too.</p>
+</section>
+
+<section class="card" id="whatsapp" style="margin-top:14px">
+  <div class="card-head"><h2>WhatsApp via Wappfly</h2><span class="tag {{ 'good' if whatsapp.configured else 'warn' }}">{{ 'Configured · draft-only' if whatsapp.configured else 'Not connected' }}</span></div>
+  <p class="hint">Connect the existing WhatsApp Business app by QR code—no Meta account or number migration. ASDA remains draft-only until you explicitly approve sending.</p>
+  <ol class="gate-how">
+    <li>In Wappfly, create a session and scan its QR code in WhatsApp Business → <b>Linked devices</b>.</li>
+    <li>Copy that session’s <b>API token</b> below and click Save.</li>
+    <li>Copy the callback URL shown afterwards into that Wappfly session’s webhook setting.</li>
+  </ol>
+  <p class="hint"><a href="https://wappfly.com/" target="_blank" rel="noreferrer">Open Wappfly</a> · The callback only pauses ASDA follow-ups when a recipient replies; it never sends a campaign.</p>
+  <form method="post" action="/settings/whatsapp" class="stack" style="max-width:640px">
+    <input name="wappfly_api_token" type="password" autocomplete="off" placeholder="{{ '•••• saved — paste to replace' if whatsapp.configured else 'Wappfly X-API-Token' }}" />
+    {% if whatsapp.callback_url %}<p class="hint"><b>Wappfly callback URL:</b><br><code>{{ whatsapp.callback_url }}</code></p>{% endif %}
+    <button class="btn ghost" type="submit">Save Wappfly setup</button>
+  </form>
+</section>
+
+<section class="card" id="live" style="margin-top:14px">
+  <div class="card-head"><h2>Live sending</h2></div>
+  <p class="hint">Practice writes copy and logs the send path. Live actually emails people and launches LinkedIn.</p>
+  <form method="post" action="/settings/live" class="choice">
+    <label class="live-toggle">
+      <input type="checkbox" name="live" value="1" {{ 'checked' if live else '' }} />
+      Send to real people
+    </label>
+    <button class="btn" type="submit">Save</button>
+  </form>
+</section>
+
+<section class="card" id="targets" style="margin-top:14px">
+  <div class="card-head"><h2>Monthly targets</h2></div>
+  <p class="hint">Shown on Home as target vs actual. Change them any time — this month’s numbers reset on the 1st.</p>
+  <form method="post" action="/targets" class="targets-form">
+    <label>Outreach
+      <input name="outreach" type="number" min="0" step="100" value="{{ targets.outreach if targets else 10000 }}" />
+    </label>
+    <label>Replies
+      <input name="replies" type="number" min="0" step="10" value="{{ targets.replies if targets else 400 }}" />
+    </label>
+    <label>Calls booked
+      <input name="meetings" type="number" min="0" step="5" value="{{ targets.meetings if targets else 80 }}" />
+    </label>
+    <button class="btn" type="submit">Save targets</button>
+  </form>
+</section>
+
+<section class="card" id="mcp" style="margin-top:14px">
+  <div class="card-head"><h2>Connect other agents</h2></div>
+  <p class="hint">ASDA is a real MCP server (JSON-RPC). Stdio for Claude/Cursor; HTTP for any agent.</p>
+  <pre class="brief">{
+  "mcpServers": {
+    "asda": { "command": "asda", "args": ["mcp"] }
+  }
+}</pre>
+  <p class="mono">HTTP JSON-RPC: POST /mcp · REST: POST /api/agent/{tool} · GET /api/agent/tools</p>
+</section>
+
+<section class="card muted-card" id="apollo" style="margin-top:14px">
+  <div class="card-head">
+    <h2>Apollo search</h2>
+    <span class="tag">{{ 'Optional' if not apollo_info.search else 'People Search on' }}</span>
+  </div>
+  <p class="hint">{{ apollo_info.detail or 'Optional. CSV upload works without Apollo.' }}</p>
+  {% if apollo_info.buy %}
+  <p class="hint">Do <strong>not</strong> buy the ~$65 Basic plan unless you want me to pull people from Apollo instead of a spreadsheet. Org search and CSV already work on Free.</p>
+  {% endif %}
+</section>
+<section class="card" style="margin-top:14px">
+  <div class="card-head"><h2>Start over</h2></div>
+  <p class="hint">Clears leads, memory, and runtime keys in this data folder. .env is left alone. Employee stops.</p>
+  <form method="post" action="/reset">
+    <button class="btn ghost" type="submit" data-confirm="Wipe the book and start onboarding from scratch?">Clear book and start over</button>
+  </form>
+</section>
+{% endblock %}

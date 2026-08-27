@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="page-head">
+  <div>
+    <h1>Pipeline</h1>
+    <p class="lede">Mail and LinkedIn as they actually are — queued, sent, accepted, in conversation — plus the status board.</p>
+  </div>
+</header>
+
+{% if now %}
+<section class="now-bar state-{{ now.state }}">
+  <i class="pulse"></i>
+  <div>
+    <strong>{{ now.headline }}</strong>
+    <small>{{ now.detail }}</small>
+  </div>
+</section>
+{% endif %}
+
+{% if channels %}
+<section class="card lane">
+  <div class="card-head"><h2>Mail</h2></div>
+  <div class="lane-grid mail">
+    {% for col in channels.email %}
+    <div class="lane-col">
+      <h3>{{ col.label }} <span>{{ col.count }}</span></h3>
+      {% for lead in col.leads %}
+      <a class="chip" href="{{ lead.href }}">
+        <strong>{{ lead.name }}</strong>
+        <small>{{ lead.company }} · {{ lead.sub }}</small>
+      </a>
+      {% else %}
+      <p class="empty">Empty</p>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card lane" style="margin-top:14px">
+  <div class="card-head"><h2>LinkedIn</h2></div>
+  <div class="lane-grid li">
+    {% for col in channels.linkedin %}
+    <div class="lane-col">
+      <h3>{{ col.label }} <span>{{ col.count }}</span></h3>
+      {% for lead in col.leads %}
+      <a class="chip" href="{{ lead.href }}">
+        <strong>{{ lead.name }}</strong>
+        <small>{{ lead.company }} · {{ lead.sub }}</small>
+      </a>
+      {% else %}
+      <p class="empty">Empty</p>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<h2 style="margin:22px 0 10px">Status board</h2>
+<div class="board">
+  {% for col in board %}
+  <section class="col stage-{{ col.key }}">
+    <h3>{{ col.label }} <span>{{ col.count }}</span></h3>
+    {% for lead in col.leads %}
+    <a class="chip" href="/leads/{{ lead.id }}">
+      <strong>{{ lead.full_name or "—" }}</strong>
+      <small>{{ lead.company.name }} · {{ lead.score }}</small>
+    </a>
+    {% else %}
+    <p class="empty">Empty</p>
+    {% endfor %}
+    {% if col.more %}<p class="empty">+{{ col.more }} more</p>{% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}
