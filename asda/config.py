@@ -115,6 +115,9 @@ class Settings(BaseSettings):
     linkedin_daily_cap: int = Field(default=15, alias="ASDA_LINKEDIN_DAILY_CAP")
     linkedin_connect_daily_cap: int = Field(default=8, alias="ASDA_LINKEDIN_CONNECT_DAILY_CAP")
     linkedin_connect_weekly_cap: int = Field(default=40, alias="ASDA_LINKEDIN_CONNECT_WEEKLY_CAP")
+    # Wappfly uses a WhatsApp Web session, so treat it more conservatively than LinkedIn.
+    whatsapp_daily_cap: int = Field(default=5, alias="ASDA_WHATSAPP_DAILY_CAP")
+    whatsapp_weekly_cap: int = Field(default=20, alias="ASDA_WHATSAPP_WEEKLY_CAP")
 
     @property
     def hitl(self) -> set[str]:

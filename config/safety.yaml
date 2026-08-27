@@ -26,6 +26,19 @@ linkedin:
   warmup_days: 14
   warmup_start_connections: 5
 
+# Wappfly uses a WhatsApp Web session. Keep the limits conservative and leave
+# room for genuine replies and human conversations.
+whatsapp:
+  daily_cap: 5
+  weekly_cap: 20
+  min_seconds_between_sends: 1800
+  weekdays_only: true
+  timezone: Asia/Kolkata
+  hour_start: 10
+  hour_end: 17
+  pause_on_bounce_rate: 0.01
+  pause_on_complaint_rate: 0.001
+
 scoring:
   min_to_sequence: 55
   high_value_threshold: 80

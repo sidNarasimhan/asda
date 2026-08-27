@@ -165,7 +165,9 @@ class Repository:
         q: str | None = None,
         company: str | None = None,
     ) -> list[Lead]:
-        stmt = select(LeadRow).order_by(LeadRow.updated_at.desc())
+        # The default desk view is a campaign worklist: show the strongest ICP
+        # prospects first, with recently corrected records breaking ties.
+        stmt = select(LeadRow).order_by(LeadRow.score.desc(), LeadRow.updated_at.desc())
         if status:
             value = status.value if isinstance(status, LeadStatus) else status
             stmt = stmt.where(LeadRow.status == value)

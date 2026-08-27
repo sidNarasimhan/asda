@@ -17,6 +17,7 @@ htmlcov/
 *.sqlite3
 data/
 outputs/
+asda-shareable-*.zip
 .streamlit/secrets.toml
 .DS_Store
 .idea/

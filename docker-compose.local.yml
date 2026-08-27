@@ -1,0 +1,17 @@
+# Persistent local ASDA service. It intentionally keeps all state on this Mac.
+# Start with: docker compose -f docker-compose.local.yml up -d --build
+services:
+  asda:
+    build: .
+    command: uvicorn asda.api.main:app --host 0.0.0.0 --port 8501
+    ports:
+      - "127.0.0.1:8501:8501"
+    environment:
+      ASDA_ENV: production
+      ASDA_DATA_DIR: /app/data
+      ASDA_CONFIG_DIR: /app/config
+      DATABASE_URL: sqlite:////app/data/asda.db
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config:ro
+    restart: unless-stopped

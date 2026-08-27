@@ -49,6 +49,7 @@ class SafetyGate:
             "email": self.settings.email_daily_cap,
             "linkedin": self.settings.linkedin_daily_cap,
             "linkedin_connect": self.settings.linkedin_connect_daily_cap,
+            "whatsapp": self.settings.whatsapp_daily_cap,
         }
         cap = caps.get(channel, 50)
         row = self._row(channel)
@@ -57,9 +58,13 @@ class SafetyGate:
         return max(0, cap - row.sent)
 
     def remaining_week(self, channel: str) -> int:
-        if channel != "linkedin_connect":
+        if channel not in {"linkedin_connect", "whatsapp"}:
             return 999
-        cap = int(self.settings.linkedin_connect_weekly_cap)
+        cap = int(
+            self.settings.linkedin_connect_weekly_cap
+            if channel == "linkedin_connect"
+            else self.settings.whatsapp_weekly_cap
+        )
         used = 0
         session = get_session()
         try:
@@ -88,17 +93,31 @@ class SafetyGate:
             return False, "outside_hours"
         return True, "ok"
 
+    def _whatsapp_window(self, now: datetime | None = None) -> tuple[bool, str]:
+        spec = self.settings.safety.get("whatsapp") or {}
+        try:
+            tz = ZoneInfo(str(spec.get("timezone") or "Asia/Kolkata"))
+        except Exception:
+            tz = ZoneInfo("Asia/Kolkata")
+        local = (now or datetime.now(timezone.utc)).astimezone(tz)
+        if spec.get("weekdays_only", True) and local.weekday() >= 5:
+            return False, "weekend"
+        if local.hour < int(spec.get("hour_start") or 10) or local.hour >= int(spec.get("hour_end") or 17):
+            return False, "outside_hours"
+        return True, "ok"
+
     def _min_gap_ok(self, channel: str) -> tuple[bool, str]:
-        spec = self.settings.safety.get("linkedin") or {}
-        if channel == "linkedin_connect":
-            gap = int(spec.get("min_seconds_between_actions") or 900)
+        if channel.startswith("linkedin"):
+            spec = self.settings.safety.get("linkedin") or {}
+            gap = int(spec.get("min_seconds_between_actions") or (900 if channel == "linkedin_connect" else 90))
         else:
-            gap = int(spec.get("min_seconds_between_actions") or 90)
+            spec = self.settings.safety.get(channel) or {}
+            gap = int(spec.get("min_seconds_between_sends") or 45)
         session = get_session()
         try:
             last = session.scalar(
                 select(EventRow)
-                .where(EventRow.type == "linkedin.sent")
+                .where(EventRow.type == f"{channel}.sent")
                 .order_by(EventRow.ts.desc())
                 .limit(1)
             )
@@ -134,6 +153,15 @@ class SafetyGate:
             if not ok:
                 return False, why
             if channel == "linkedin_connect" and self.remaining_week(channel) <= 0:
+                return False, "weekly_cap_reached"
+        if channel == "whatsapp":
+            ok, why = self._whatsapp_window()
+            if not ok:
+                return False, why
+            ok, why = self._min_gap_ok(channel)
+            if not ok:
+                return False, why
+            if self.remaining_week(channel) <= 0:
                 return False, "weekly_cap_reached"
         safety = self.settings.safety.get(channel, {})
         sent = max(row.sent, 1)

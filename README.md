@@ -1,21 +1,20 @@
 # ASDA — Autonomous Sales Development Agent
 
-A self-hostable SDR that actually loops: ingest → research this person → write unique copy → email + LinkedIn → read replies → book meetings → learn. No n8n. Talk to it; paste API keys in the chat.
+A self-hostable sales-workspace for Altisec: ingest → scope and research leads → draft multi-channel outreach → review → run approved sequences. No n8n. Talk to it; paste credentials in the desk instead of committing them.
 
 ```
 Ingestion (CSV / Apollo / webhook)
         ↓
-Research (web-backed, unique to this human)
+Research (web-backed, tailored to this person)
         ↓
-Content (playbook + hooks, no generic mail)
+Content (playbook + role/company-aware drafts)
         ↓
-24/7 worker ── mail sequence ── IMAP replies
-            └── LinkedIn (PhantomBuster) ── inbox
+Worker ── email / LinkedIn / WhatsApp sequence ── replies
         ↓
 Learning loop (Sunday playbook) → next week's copy
 ```
 
-This is a **hybrid agent**: LLM brain (research, copy, replies, talk, learn) and deterministic hands (sequence engine, SMTP/IMAP, PhantomBuster, APScheduler). When live is on, it does not wait for approval on every send. Pause in the chat anytime.
+This is a **hybrid agent**: LLM brain (research, copy, replies, talk, learn) and deterministic hands (sequence engine, SMTP/IMAP, PhantomBuster, Wappfly, APScheduler). Sending remains in practice mode until explicitly enabled.
 
 ## Quick start (anyone)
 
@@ -31,7 +30,7 @@ Open http://localhost:8501 and **talk**:
 2. Work mailbox + Google App Password (or Outlook)
 3. [PhantomBuster](https://phantombuster.com) API key
 4. LinkedIn `li_at` cookie (Chrome → linkedin.com → DevTools → Application → Cookies)
-5. Say **go live** when you want real sends. Start the employee to keep it running overnight.
+5. Review drafts and set the required channels. Enable live sending only when the campaign is approved.
 
 Keys land in `data/runtime.json` (gitignored). `.env` still works if you prefer files — see `.env.example`.
 
@@ -40,7 +39,17 @@ make test
 docker compose up --build   # dashboard on :8501, worker included via the API process
 ```
 
-**Nothing is sent until you confirm live.** Practice mode researches and writes; it does not email people.
+**Nothing is sent until live sending is explicitly enabled.** Practice mode researches and writes; it does not contact people.
+
+## Setup and channel guides
+
+Start here:
+
+- [Full local + Docker setup](docs/SETUP.md)
+- [Email, LinkedIn, WhatsApp, Apollo, SignalHire, and reply-monitoring setup](docs/CHANNELS.md)
+- [Campaign readiness checklist](docs/CAMPAIGN_READINESS.md)
+
+Never commit `.env`, `data/`, database files, runtime configuration, exported lead lists, or passwords. They are already gitignored.
 
 ## What the desk shows
 
