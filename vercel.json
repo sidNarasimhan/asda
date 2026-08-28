@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "https://nation-powered-territories-bible.trycloudflare.com/$1"
+      "destination": "https://ensure-hartford-cayman-november.trycloudflare.com/$1"
     }
   ]
 }
