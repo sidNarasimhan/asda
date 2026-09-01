@@ -2,21 +2,66 @@ services:
   - type: web
     name: asda-altisec
     runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
     healthCheckPath: /
+    maxShutdownDelaySeconds: 60
+    autoDeployTrigger: commit
     envVars:
       - key: ASDA_ENV
         value: production
       - key: ASDA_DRY_RUN
         value: "true"
-      - key: ASDA_DATA_DIR
-        value: /var/asda-data
       - key: DATABASE_URL
-        value: sqlite:////var/asda-data/asda.db
+        fromDatabase:
+          name: asda-altisec-db
+          property: connectionString
+      # Secrets are supplied only in Render's encrypted environment, never in Git.
+      - key: ASDA_SHARE_PASSWORD
+        sync: false
+      - key: ASDA_BOOTSTRAP_TOKEN
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: SMTP_REPLY_TO
+        sync: false
+      - key: PHANTOMBUSTER_API_KEY
+        sync: false
+      - key: PHANTOMBUSTER_SESSION_COOKIE
+        sync: false
+      - key: ASDA_PB_CONNECT_AGENT_ID
+        sync: false
+      - key: ASDA_PB_MESSAGE_AGENT_ID
+        sync: false
+      - key: ASDA_PB_INBOX_AGENT_ID
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: APOLLO_API_KEY
+        sync: false
       - key: WAPPFLY_API_TOKEN
         sync: false
       - key: WAPPFLY_WEBHOOK_SECRET
-        generateValue: true
-    disk:
-      name: asda-data
-      mountPath: /var/asda-data
-      sizeGB: 1
+        sync: false
+      - key: ASDA_PUBLIC_BASE_URL
+        sync: false
+      - key: ASDA_SMTP_VERIFIED
+        value: "true"
+
+databases:
+  - name: asda-altisec-db
+    databaseName: asda
+    user: asda
+    region: singapore
+    plan: 0.5c-1g
+    version: "17"
+    diskSizeGB: 5
+    storageAutoscalingEnabled: true

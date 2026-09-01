@@ -95,9 +95,15 @@ class Settings(BaseSettings):
     smtp_user: str = Field(default="", alias="SMTP_USER")
     smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
     smtp_from: str = Field(default="", alias="SMTP_FROM")
+    smtp_reply_to: str = Field(default="", alias="SMTP_REPLY_TO")
+    smtp_verified: bool = Field(default=False, alias="ASDA_SMTP_VERIFIED")
 
     phantombuster_api_key: str = Field(default="", alias="PHANTOMBUSTER_API_KEY")
     phantombuster_session_cookie: str = Field(default="", alias="PHANTOMBUSTER_SESSION_COOKIE")
+    pb_connect_agent_id: str = Field(default="", alias="ASDA_PB_CONNECT_AGENT_ID")
+    pb_message_agent_id: str = Field(default="", alias="ASDA_PB_MESSAGE_AGENT_ID")
+    pb_inbox_agent_id: str = Field(default="", alias="ASDA_PB_INBOX_AGENT_ID")
+    pb_search_agent_id: str = Field(default="", alias="ASDA_PB_SEARCH_AGENT_ID")
     bolna_api_key: str = Field(default="", alias="BOLNA_API_KEY")
     bolna_agent_id: str = Field(default="", alias="BOLNA_AGENT_ID")
     bolna_from_number: str = Field(default="", alias="BOLNA_FROM_NUMBER")
@@ -107,6 +113,7 @@ class Settings(BaseSettings):
     whatsapp_webhook_verify_token: str = Field(default="", alias="WHATSAPP_WEBHOOK_VERIFY_TOKEN")
     wappfly_api_token: str = Field(default="", alias="WAPPFLY_API_TOKEN")
     wappfly_webhook_secret: str = Field(default="", alias="WAPPFLY_WEBHOOK_SECRET")
+    public_base_url: str = Field(default="", alias="ASDA_PUBLIC_BASE_URL")
 
     hubspot_access_token: str = Field(default="", alias="HUBSPOT_ACCESS_TOKEN")
     slack_webhook_url: str = Field(default="", alias="SLACK_WEBHOOK_URL")

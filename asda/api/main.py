@@ -4,9 +4,10 @@ import base64
 import hmac
 import logging
 import os
+import tempfile
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
@@ -80,7 +81,7 @@ def _share_ok(request: Request, pwd: str) -> bool:
 async def share_password_gate(request: Request, call_next):
     """Public share link needs a password. Login page, not a browser popup."""
     path = request.url.path
-    if path.startswith("/static") or path in {"/login", "/favicon.ico", "/api/ingest/signalhire/callback", "/webhooks/whatsapp"} or path.startswith("/webhooks/wappfly/"):
+    if path.startswith("/static") or path in {"/login", "/favicon.ico", "/api/ingest/signalhire/callback", "/webhooks/whatsapp", "/internal/bootstrap/sqlite"} or path.startswith("/webhooks/wappfly/"):
         return await call_next(request)
     pwd = _share_password()
     if not pwd or _share_ok(request, pwd):
@@ -107,6 +108,36 @@ app.include_router(web_router)
 from pathlib import Path
 
 app.mount("/static", StaticFiles(directory=str(Path(__file__).resolve().parents[1] / "web" / "static")), name="static")
+
+
+@app.post("/internal/bootstrap/sqlite")
+async def bootstrap_sqlite(request: Request, database: UploadFile):
+    """One-time migration endpoint, protected by an unguessable deployment secret."""
+    token = os.environ.get("ASDA_BOOTSTRAP_TOKEN", "")
+    supplied = request.headers.get("x-asda-bootstrap-token", "")
+    if not token or not hmac.compare_digest(supplied, token):
+        raise HTTPException(403, "Invalid bootstrap token")
+    if not (database.filename or "").endswith(".db"):
+        raise HTTPException(400, "Expected an ASDA SQLite .db file")
+    from asda.db.models import LeadRow
+    from asda.db.session import get_session
+    from asda.ops.sqlite_import import import_sqlite_database
+
+    session = get_session()
+    try:
+        if session.query(LeadRow).count() > 0:
+            raise HTTPException(409, "Database already contains leads")
+    finally:
+        session.close()
+    with tempfile.NamedTemporaryFile(suffix=".db") as tmp:
+        written = 0
+        while chunk := await database.read(1024 * 1024):
+            written += len(chunk)
+            if written > 80 * 1024 * 1024:
+                raise HTTPException(413, "Database upload exceeds 80 MB")
+            tmp.write(chunk)
+        tmp.flush()
+        return {"ok": True, "copied": import_sqlite_database(Path(tmp.name))}
 
 
 @app.get("/feeds/{lead_id}.csv")
