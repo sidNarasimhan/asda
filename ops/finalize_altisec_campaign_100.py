@@ -157,16 +157,18 @@ def draft_for(lead, account_role: str) -> GeneratedContent:
     company = lead.company.name
     theme, angle, outcome = scope_for(lead)
     role = role_phrase(lead)
+    signature = "Warm regards,\n\nKarthik BT\nSales Executive - Cybersecurity Solutions\n+91-8105432939"
     emails = [
         SequenceEmail(step=1, delay_days=0, subject=f"Cybersecurity support for {company}", angle=angle, body=(
-            f"Hi {first},\n\nI’m Karthik from Altisec. We help companies assess and improve cybersecurity across cloud, applications, identity, SOC operations and incident response.\n\n"
-            f"For {company}, we can start with a focused review of {theme}, identify the gaps that matter, and help your team close them.\n\nWould you be open to a 20-minute call next week?\n\nKarthik\nAltisec")),
+            f"Hi {first},\n\nI’m Karthik from Altisec Technologies. We work with organizations on cybersecurity across endpoint security, SOC and MDR, cloud security, data security and DLP, OT security, VAPT, and security compliance.\n\n"
+            "I wanted to reach out to understand how your team is currently managing cybersecurity and whether you are evaluating any new solutions or services. If relevant, I’d be happy to have a brief discussion and understand your current setup and priorities.\n\n"
+            f"Please let me know if we could connect for a short discussion.\n\n{signature}")),
         SequenceEmail(step=2, delay_days=3, subject=f"Re: security priorities at {company}", angle="practical scope", body=(
-            f"Hi {first},\n\nFollowing up on my note. Altisec can assess one priority area, give your team a clear list of gaps, and help fix them.\n\nWould a short call be useful to see where we could help {company}?\n\nKarthik")),
+            f"Hi {first},\n\nFollowing up on my earlier note. Altisec Technologies supports organizations across endpoint security, SOC and MDR, cloud security, data security, OT security, VAPT, and compliance.\n\nPlease let me know if we could connect for a short discussion.\n\n{signature}")),
         SequenceEmail(step=3, delay_days=7, subject=f"One focused starting point for {company}", angle="independent validation", body=(
-            f"Hi {first},\n\nAltisec is a cybersecurity services team. We handle assessments, testing and remediation across cloud, applications, IAM, SOC and incident response.\n\nIf useful, I can send a short starting scope for {company}.\n\nKarthik")),
+            f"Hi {first},\n\nIf your team is evaluating any cybersecurity solutions or services, I’d be happy to understand your current setup and priorities and see where Altisec Technologies could help.\n\nWould you be available for a brief discussion?\n\n{signature}")),
         SequenceEmail(step=4, delay_days=12, subject="Should I close this out?", angle="close the loop", body=(
-            f"Hi {first},\n\nI’ll leave it here. If you would value a second view on {theme} at {company}, I’m happy to talk. If not, no need to reply.\n\nKarthik")),
+            f"Hi {first},\n\nI wanted to follow up once more. If cybersecurity services are relevant for your team, please let me know and we can arrange a short discussion.\n\n{signature}")),
     ]
     linkedin = LinkedInSequence(
         connection_note=f"Hi {first}—I’m with Altisec. We help IT and security teams assess and improve {theme}. Thought it would be useful to connect.",
