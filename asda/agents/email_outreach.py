@@ -29,8 +29,18 @@ class EmailOutreachAgent:
 
         ok, reason = self.safety.allow("email", lead)
         if not ok:
-            lead.sequence_state.paused = True
             lead.sequence_state.reason = reason
+            # Pacing and daily caps are temporary holds. Do not permanently
+            # pause a lead merely because another message just went out.
+            if reason == "too_soon":
+                from asda.modules.safety import next_slot
+
+                lead.sequence_state.next_email_at = next_slot("email", datetime.now(timezone.utc))
+                return lead, [audit(self.name, "held", reason)]
+            if reason == "daily_cap_reached":
+                lead.sequence_state.next_email_at = datetime.now(timezone.utc) + timedelta(hours=1)
+                return lead, [audit(self.name, "held", reason)]
+            lead.sequence_state.paused = True
             return lead, [audit(self.name, "blocked", reason)]
 
         emails = content.emails_b if lead.sequence_state.variant == "B" else content.emails

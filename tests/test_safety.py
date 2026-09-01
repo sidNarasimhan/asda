@@ -76,3 +76,23 @@ def test_held_connect_is_not_marked_sent():
     assert lead.sequence_state.linkedin_stage in {"", "idle"}
     assert not any(o.kind == "linkedin_connect" for o in lead.outcomes)
     assert logs and logs[0].action == "held"
+
+
+def test_email_minimum_gap_is_enforced_when_live(monkeypatch, tmp_path):
+    monkeypatch.setenv("ASDA_DRY_RUN", "false")
+    monkeypatch.setenv("ASDA_DATA_DIR", str(tmp_path))
+    get_settings.cache_clear()
+    from asda.config import Settings
+    from asda.db.models import EventRow
+    from asda.db.session import get_session, init_db
+    init_db()
+    session = get_session()
+    session.add(EventRow(id="recent-email", type="email.sent", payload={}, ts=datetime.now(timezone.utc)))
+    session.commit()
+    session.close()
+    gate = SafetyGate()
+    gate.settings = Settings()
+    ok, reason = gate._min_gap_ok("email")
+    assert not ok
+    assert reason == "too_soon"
+    get_settings.cache_clear()

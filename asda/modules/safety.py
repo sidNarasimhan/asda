@@ -145,6 +145,10 @@ class SafetyGate:
             return False, "channel_paused"
         if self.remaining(channel) <= 0:
             return False, "daily_cap_reached"
+        if channel == "email":
+            ok, why = self._min_gap_ok(channel)
+            if not ok:
+                return False, why
         if channel.startswith("linkedin"):
             ok, why = self._linkedin_window()
             if not ok:

@@ -3,7 +3,7 @@
 email:
   daily_cap: 80
   hourly_cap: 20
-  min_seconds_between_sends: 45
+  min_seconds_between_sends: 180
   pause_on_bounce_rate: 0.04
   pause_on_complaint_rate: 0.001
   suppress_roles:
