@@ -23,6 +23,7 @@ def main() -> None:
     leads.sort(key=lambda lead: (-lead.score, lead.full_name.lower()))
     columns = [
         "lead_id", "full_name", "title", "company", "email", "phone", "linkedin_url", "score", "review_status",
+        "account_role", "contact_verification", "profile_verification", "why_this_person", "why_now", "research_source_1", "research_source_2", "copy_basis",
         "email_1_subject", "email_1_body", "email_2_subject", "email_2_body", "email_3_subject", "email_3_body", "email_4_subject", "email_4_body",
         "linkedin_connection_note", "linkedin_message_1", "linkedin_message_2", "linkedin_message_3",
         "whatsapp_template_name", "whatsapp_message_1", "whatsapp_message_2",
@@ -35,11 +36,22 @@ def main() -> None:
             content = repo.get_content(lead.id)
             if not content:
                 continue
+            card = lead.research_card
+            account_role = "backup_same_account" if "backup_same_account" in lead.tags else "primary"
+            contact_verification = next((signal for signal in (card.key_signals if card else []) if "email" in signal.lower()), "not recorded")
             writer.writerow({
                 "lead_id": lead.id, "full_name": lead.full_name, "title": lead.title,
                 "company": lead.company.name, "email": lead.email, "phone": lead.phone,
                 "linkedin_url": lead.linkedin_url, "score": lead.score,
-                "review_status": "draft-only; no outreach approved",
+                "review_status": "profile re-audited; draft-only; no outreach approved",
+                "account_role": account_role,
+                "contact_verification": contact_verification,
+                "profile_verification": "LinkedIn profile reviewed 2026-09-01",
+                "why_this_person": card.icp_rationale if card else "",
+                "why_now": "No event trigger used; current-role relevance only.",
+                "research_source_1": card.sources[0] if card and card.sources else "",
+                "research_source_2": card.sources[1] if card and len(card.sources) > 1 else "",
+                "copy_basis": content.style_notes,
                 "email_1_subject": value(content.emails, 0, "subject"), "email_1_body": value(content.emails, 0, "body"),
                 "email_2_subject": value(content.emails, 1, "subject"), "email_2_body": value(content.emails, 1, "body"),
                 "email_3_subject": value(content.emails, 2, "subject"), "email_3_body": value(content.emails, 2, "body"),
