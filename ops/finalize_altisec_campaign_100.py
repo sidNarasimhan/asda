@@ -158,27 +158,27 @@ def draft_for(lead, account_role: str) -> GeneratedContent:
     theme, angle, outcome = scope_for(lead)
     role = role_phrase(lead)
     emails = [
-        SequenceEmail(step=1, delay_days=0, subject=f"Security priorities at {company}", angle=angle, body=(
-            f"Hi {first},\n\nI’m Karthik from Altisec. We help organisations assess and strengthen cybersecurity across cloud, applications, identity, security operations and incident readiness. We also help close the gaps we find, so the work does not end with a report.\n\n"
-            f"I’m not assuming you have an active project. I’m reaching out because {role} at {company} puts you close to decisions about {theme}. If it is being reviewed, we can start with one priority area and give your team a clear view of exposure, remediation effort and what to tackle first.\n\nWould a 20-minute conversation next week be worthwhile?\n\nKarthik\nAltisec")),
+        SequenceEmail(step=1, delay_days=0, subject=f"Cybersecurity support for {company}", angle=angle, body=(
+            f"Hi {first},\n\nI’m Karthik from Altisec. We help companies assess and improve cybersecurity across cloud, applications, identity, SOC operations and incident response.\n\n"
+            f"For {company}, we can start with a focused review of {theme}, identify the gaps that matter, and help your team close them.\n\nWould you be open to a 20-minute call next week?\n\nKarthik\nAltisec")),
         SequenceEmail(step=2, delay_days=3, subject=f"Re: security priorities at {company}", angle="practical scope", body=(
-            f"Hi {first},\n\nTo make this concrete, Altisec can begin with a tightly scoped review—such as cloud configuration, IAM/PAM, application testing, SOC effectiveness or incident readiness—then turn the findings into a practical remediation plan.\n\nFor {company}, I would start with {theme}. Is that close to anything already on your agenda?\n\nKarthik")),
+            f"Hi {first},\n\nFollowing up on my note. Altisec can assess one priority area, give your team a clear list of gaps, and help fix them.\n\nWould a short call be useful to see where we could help {company}?\n\nKarthik")),
         SequenceEmail(step=3, delay_days=7, subject=f"One focused starting point for {company}", angle="independent validation", body=(
-            f"Hi {first},\n\nThe reason teams use Altisec is straightforward: an independent technical view, clear priorities, and hands-on support to fix what matters. We are a cybersecurity services partner, not another point-product pitch.\n\nIf useful, I can outline a small first engagement around {outcome}.\n\nKarthik")),
+            f"Hi {first},\n\nAltisec is a cybersecurity services team. We handle assessments, testing and remediation across cloud, applications, IAM, SOC and incident response.\n\nIf useful, I can send a short starting scope for {company}.\n\nKarthik")),
         SequenceEmail(step=4, delay_days=12, subject="Should I close this out?", angle="close the loop", body=(
-            f"Hi {first},\n\nI’ll close the loop after this. If an independent review of {theme} is relevant at {company}, I’m happy to compare notes for 20 minutes. If not, no problem—I won’t keep following up.\n\nKarthik")),
+            f"Hi {first},\n\nI’ll leave it here. If you would value a second view on {theme} at {company}, I’m happy to talk. If not, no need to reply.\n\nKarthik")),
     ]
     linkedin = LinkedInSequence(
         connection_note=f"Hi {first}—I’m with Altisec. We help IT and security teams assess and improve {theme}. Thought it would be useful to connect.",
         messages=[
-            LinkedInMessage(step=1, delay_days=2, body=f"Thanks for connecting, {first}. Given {role} at {company}, would an independent review of {theme} be useful this quarter?"),
-            LinkedInMessage(step=2, delay_days=6, body="Altisec combines assessment with remediation support across cloud, IAM, application security, SOC and incident readiness. Happy to share a concise starting scope if useful."),
+            LinkedInMessage(step=1, delay_days=2, body=f"Thanks for connecting, {first}. Altisec helps companies assess and fix cybersecurity gaps. For {company}, we could start with {theme}. Would a short call be useful?"),
+            LinkedInMessage(step=2, delay_days=6, body="Altisec can assess the problem, test the controls and help with remediation across cloud, IAM, application security, SOC and incident response. Happy to send a concise starting scope."),
             LinkedInMessage(step=3, delay_days=10, body=f"I’ll leave it there, {first}. If {theme} becomes a priority at {company}, I’d be glad to compare notes."),
         ],
     )
     whatsapp = WhatsAppSequence(messages=[
-        WhatsAppMessage(step=1, delay_days=0, body=f"Hi {first}, Karthik from Altisec here. We help IT and security teams assess and improve {theme}, then support remediation. Would a short conversation be relevant for {company}?"),
-        WhatsAppMessage(step=2, delay_days=6, body=f"Hi {first}, following up once on my Altisec note. If {theme} is on the agenda at {company}, I can send a concise starting scope. Otherwise I’ll close this out."),
+        WhatsAppMessage(step=1, delay_days=0, body=f"Hi {first}, Karthik from Altisec here. We help security and IT teams find and fix gaps across cloud, applications, identity and SOC. Would a focused review of {theme} be useful at {company}?"),
+        WhatsAppMessage(step=2, delay_days=6, body=f"Hi {first}, following up once on my Altisec note. If {theme} is relevant at {company}, I can send a short starting scope. Otherwise I’ll leave it here."),
     ])
     return GeneratedContent(
         emails=emails, linkedin=linkedin, whatsapp=whatsapp,
